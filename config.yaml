@@ -1,5 +1,13 @@
 news_sites:
   eluniversal:
     url: https://eluniversal.com
+    queries:
+      homepage_article_links: 'a[href^="http://www.eluniversal.com/"]'
+      article_title: '.title'
+      article_body: '#cuerpo'
   elpais:
     url: https://elpais.com
+    queries:
+      homepage_article_links: '.c_t a[href^=""]'
+      article_title: '.a_t'
+      article_body: '.a_c > p'
