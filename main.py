@@ -8,7 +8,7 @@ import logging
 from requests.exceptions import HTTPError
 from urllib3.exceptions import MaxRetryError
 
-import news_page_object as news
+from src.interfaces import HomePage, ArticlePage
 from common import config
 
 
@@ -20,12 +20,9 @@ is_root_path = re.compile(r'^/.+$')
 
 
 def _build_link(host, link):
-    if is_well_formed_link.match(link):
-        return link
-    elif is_root_path.match(link):
-        return f'{host}{link}'
-    else:
-        return f'{host}/{link}'
+    return link if is_well_formed_link.match(link) \
+        else f'{host}{link}' if is_root_path.match(link) \
+        else f'{host}/{link}'
 
 
 def _fetch_article(news_site_uid, host, link):
@@ -34,7 +31,7 @@ def _fetch_article(news_site_uid, host, link):
     article = None
 
     try:
-        article = news.ArticlePage(news_site_uid, _build_link(host, link))
+        article = ArticlePage(news_site_uid, _build_link(host, link))
     except (HTTPError, MaxRetryError) as error:
         logger.warning('Error while fetching the article', exc_info=False)
 
@@ -71,7 +68,7 @@ def _news_scraper(news_site_uid):
     host = config()['news_sites'][news_site_uid]['url']
 
     logging.info(f'Beginning scraper for {host}')
-    homepage = news.HomePage(news_site_uid, host)
+    homepage = HomePage(news_site_uid, host)
 
     articles = []
 
