@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def main(filename: str, output_directory: str) -> None:
+def main(filename: str) -> None:
     logger.info('Starting cleaning process')
 
     df = _read_data(filename)
@@ -33,7 +33,7 @@ def main(filename: str, output_directory: str) -> None:
     df = _remove_duplicates_entries(df, 'title')
     df = _drop_rows_with_missing_values(df)
 
-    _save_data(df, filename, output_directory)
+    _save_data(df, filename)
 
 
 def _read_data(filename: str) -> pd.DataFrame:
@@ -129,8 +129,8 @@ def _drop_rows_with_missing_values(df: pd.DataFrame) -> pd.DataFrame:
     return df.dropna()
 
 
-def _save_data(df: pd.DataFrame, filename: str, output_directory: str) -> None:
-    clean_filename = f'{output_directory}/clean_{filename.split("/")[-1]}'
+def _save_data(df: pd.DataFrame, filename: str) -> None:
+    clean_filename = f'clean_{filename.split("/")[-1]}'
 
     logger.info(f'Saving data at location: {clean_filename}')
     df.to_csv(clean_filename)
@@ -143,13 +143,6 @@ if __name__ == '__main__':
         help='The path to the dirty data',
         type=str
     )
-    parser.add_argument(
-        '-o', '--out',
-        dest='output_directory',
-        help='The directory to load the cleaned data',
-        type=str,
-        default='./output/processed'
-    )
 
     args = parser.parse_args()
-    main(args.filename, args.output_directory)
+    main(args.filename)

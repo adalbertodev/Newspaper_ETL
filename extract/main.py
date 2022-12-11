@@ -1,4 +1,3 @@
-import os
 import re
 from datetime import datetime
 import csv
@@ -8,7 +7,7 @@ import logging
 from requests.exceptions import HTTPError
 from urllib3.exceptions import MaxRetryError
 
-from src.interfaces import HomePage, ArticlePage
+from interfaces import HomePage, ArticlePage
 from common import config
 
 
@@ -19,7 +18,7 @@ is_well_formed_link = re.compile(r'^https?://.+/.+$')
 is_root_path = re.compile(r'^/.+$')
 
 
-def _news_scraper(news_site_uid: str, output_directory: str) -> None:
+def _news_scraper(news_site_uid: str) -> None:
     host = config()['news_sites'][news_site_uid]['url']
 
     logging.info(f'Beginning scraper for {host}')
@@ -34,7 +33,7 @@ def _news_scraper(news_site_uid: str, output_directory: str) -> None:
             logger.info('Article fetched!!')
             articles.append(article)
 
-    _save_articles(news_site_uid, articles, output_directory)
+    _save_articles(news_site_uid, articles)
 
 
 def _build_link(host: str, link: str) -> str:
@@ -60,17 +59,14 @@ def _fetch_article(news_site_uid: str, host: str, link: str) -> ArticlePage | No
     return article
 
 
-def _save_articles(news_site_uid: str, articles: list[ArticlePage], output_directory) -> None:
+def _save_articles(news_site_uid: str, articles: list[ArticlePage]) -> None:
     current_date = datetime.now().strftime('%Y-%m-%d')
-    out_file_name = f'{output_directory}/{news_site_uid}_{current_date}_articles.csv'
+    out_file_name = f'{news_site_uid}_{current_date}_articles.csv'
 
     csv_headers = list(filter(
         lambda property: not property.startswith('_'),
         dir(articles[0]))
     )
-
-    if not os.path.exists(output_directory):
-        os.mkdir(output_directory)
 
     with open(out_file_name, mode='w+', encoding='utf-8', newline='') as file:
         writer = csv.writer(file)
@@ -91,13 +87,6 @@ if __name__ == '__main__':
         type=str,
         choices=news_sites_choices
     )
-    parser.add_argument(
-        '-o', '--out',
-        dest='output_directory',
-        help='The directory to load the data',
-        type=str,
-        default='./output/raw'
-    )
 
     args = parser.parse_args()
-    _news_scraper(args.news_site, args.output_directory)
+    _news_scraper(args.news_site)
