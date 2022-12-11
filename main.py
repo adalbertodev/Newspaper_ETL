@@ -19,13 +19,31 @@ is_well_formed_link = re.compile(r'^https?://.+/.+$')
 is_root_path = re.compile(r'^/.+$')
 
 
-def _build_link(host, link):
+def _news_scraper(news_site_uid: str, output_directory: str) -> None:
+    host = config()['news_sites'][news_site_uid]['url']
+
+    logging.info(f'Beginning scraper for {host}')
+    homepage = HomePage(news_site_uid, host)
+
+    articles = []
+
+    for link in homepage.article_links:
+        article = _fetch_article(news_site_uid, host, link)
+
+        if article:
+            logger.info('Article fetched!!')
+            articles.append(article)
+
+    _save_articles(news_site_uid, articles, output_directory)
+
+
+def _build_link(host: str, link: str) -> str:
     return link if is_well_formed_link.match(link) \
         else f'{host}{link}' if is_root_path.match(link) \
         else f'{host}/{link}'
 
 
-def _fetch_article(news_site_uid, host, link):
+def _fetch_article(news_site_uid: str, host: str, link: str) -> ArticlePage | None:
     logger.info(f'Start fetching article at {link}')
 
     article = None
@@ -42,18 +60,17 @@ def _fetch_article(news_site_uid, host, link):
     return article
 
 
-def _save_articles(news_site_uid, articles):
+def _save_articles(news_site_uid: str, articles: list[ArticlePage], output_directory) -> None:
     current_date = datetime.now().strftime('%Y-%m-%d')
-    out_folder = './output'
-    out_file_name = f'{out_folder}/{news_site_uid}_{current_date}_articles.csv'
+    out_file_name = f'{output_directory}/{news_site_uid}_{current_date}_articles.csv'
 
     csv_headers = list(filter(
         lambda property: not property.startswith('_'),
         dir(articles[0]))
     )
 
-    if not os.path.exists(out_folder):
-        os.mkdir(out_folder)
+    if not os.path.exists(output_directory):
+        os.mkdir(output_directory)
 
     with open(out_file_name, mode='w+', encoding='utf-8', newline='') as file:
         writer = csv.writer(file)
@@ -62,24 +79,6 @@ def _save_articles(news_site_uid, articles):
         for article in articles:
             row = [str(getattr(article, header)) for header in csv_headers]
             writer.writerow(row)
-
-
-def _news_scraper(news_site_uid):
-    host = config()['news_sites'][news_site_uid]['url']
-
-    logging.info(f'Beginning scraper for {host}')
-    homepage = HomePage(news_site_uid, host)
-
-    articles = []
-
-    for link in homepage.article_links:
-        article = _fetch_article(news_site_uid, host, link)
-
-        if article:
-            logger.info('Article fetched!!')
-            articles.append(article)
-
-    _save_articles(news_site_uid, articles)
 
 
 if __name__ == '__main__':
@@ -92,6 +91,13 @@ if __name__ == '__main__':
         type=str,
         choices=news_sites_choices
     )
+    parser.add_argument(
+        '-o', '--out',
+        dest='output_directory',
+        help='The directory to load the data',
+        type=str,
+        default='./output/raw'
+    )
 
     args = parser.parse_args()
-    _news_scraper(args.news_site)
+    _news_scraper(args.news_site, args.output_directory)

@@ -4,6 +4,7 @@ from .NewsPage import NewsPage
 class ArticlePage(NewsPage):
     def __init__(self, news_site_uid, url):
         super().__init__(news_site_uid, url)
+        self.url = url
 
     @property
     def title(self):

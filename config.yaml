@@ -2,7 +2,7 @@ news_sites:
   eluniversal:
     url: https://eluniversal.com
     queries:
-      homepage_article_links: 'a[href^="http://www.eluniversal.com/"]'
+      homepage_article_links: 'a[href^=""]'
       article_title: '.title'
       article_body: '#cuerpo'
   elpais:
