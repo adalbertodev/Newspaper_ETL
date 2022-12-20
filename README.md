@@ -19,3 +19,11 @@ A complete ETL pipeline using Web Scraping to get newspapers articles and load t
 ```
 pip install requests beautifulsoup4 pandas pyyaml nltk sqlalchemy
 ```
+
+## Execute Program
+
+```
+git clone https://github.com/adalbertodev/Newspaper_ETL.git
+cd ./Newspaper_ETL
+python pipeline.py
+```
