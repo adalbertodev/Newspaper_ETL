@@ -3,6 +3,7 @@ from datetime import datetime
 import csv
 import argparse
 import logging
+from typing import Union
 
 from requests.exceptions import HTTPError
 from urllib3.exceptions import MaxRetryError
@@ -42,7 +43,7 @@ def _build_link(host: str, link: str) -> str:
         else f'{host}/{link}'
 
 
-def _fetch_article(news_site_uid: str, host: str, link: str) -> ArticlePage | None:
+def _fetch_article(news_site_uid: str, host: str, link: str) -> Union[ArticlePage, None]:
     logger.info(f'Start fetching article at {link}')
 
     article = None
